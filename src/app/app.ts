@@ -10,7 +10,7 @@ import { AuthService } from './services/auth.service';
   styleUrl: './app.scss',
 })
 export class App {
-  protected readonly title = signal('openrooms');
+  protected readonly title = signal('convngx-template');
 
   constructor(public authService: AuthService) {}
 }

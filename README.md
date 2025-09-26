@@ -1,6 +1,32 @@
-# Openrooms
+# Angular Convex Template
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+This is a template repository that simplifies Angular-Convex integration with betterAuth through the use of the [@razakAlpha/convngx](https://www.npmjs.com/package/@razakAlpha/convngx) library.
+
+This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2 and includes pre-configured authentication components and services.
+
+## Features
+
+- **Angular 20.3.2** - Latest Angular framework
+- **Convex Integration** - Real-time backend with Convex
+- **betterAuth** - Modern authentication solution
+- **@razakAlpha/convngx** - Simplified Angular-Convex integration
+- **Pre-built Auth Components** - Sign-in and Sign-up components ready to use
+- **TypeScript** - Full TypeScript support
+- **SCSS Styling** - Modern CSS preprocessing
+
+## Quick Start
+
+1. Clone this template repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Set up your Convex project (see [Convex documentation](https://docs.convex.dev))
+4. Configure your environment variables
+5. Start the development server:
+   ```bash
+   ng serve
+   ```
 
 ## Development server
 
@@ -54,6 +80,31 @@ ng e2e
 
 Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
+## Template Structure
+
+```
+src/
+├── app/
+│   ├── components/
+│   │   └── auth/           # Authentication components
+│   │       ├── signin.component.ts
+│   │       └── signup.component.ts
+│   ├── services/
+│   │   ├── auth.service.ts
+│   │   └── convex-auth.state.ts
+│   └── ...
+├── convex/                # Convex backend functions
+│   ├── auth.ts
+│   ├── auth.config.ts
+│   ├── schema.ts
+│   └── ...
+└── lib/
+    └── auth.ts           # Auth utilities
+```
+
 ## Additional Resources
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli)
+- [Convex Documentation](https://docs.convex.dev)
+- [betterAuth Documentation](https://www.better-auth.com)
+- [@razakAlpha/convngx Package](https://www.npmjs.com/package/@razakAlpha/convngx)
