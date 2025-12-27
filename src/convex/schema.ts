@@ -5,7 +5,13 @@ export default defineSchema({
   users: defineTable({
     email: v.string(),
     name: v.string(),
-  }).index('by_email', ['email']),
+    role: v.union(v.literal('user'), v.literal('guest')),
+    isActive: v.boolean(),
+    lastLogin: v.optional(v.number()),
+  })
+    .index('by_email', ['email'])
+    .index('by_role', ['role'])
+    .index('by_isActive', ['isActive']),
   messages: defineTable({
     userId: v.id('users'),
     content: v.string(),

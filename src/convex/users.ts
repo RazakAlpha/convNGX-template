@@ -9,8 +9,11 @@ export const getCurrentUser = query({
       _id: v.id('users'),
       email: v.string(),
       name: v.string(),
+      role: v.union(v.literal('user'), v.literal('guest')),
+      isActive: v.boolean(),
+      lastLogin: v.optional(v.number()),
       _creationTime: v.number(),
-    }),
+    })
   ),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();

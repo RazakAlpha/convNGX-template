@@ -19,6 +19,8 @@ export const { createUser, updateUser, deleteUser, createSession } =
       return ctx.db.insert('users', {
         email: user.email,
         name: user.name,
+        role: 'guest', // Default role for new users
+        isActive: true, // New users are active by default
       });
     },
 

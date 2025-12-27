@@ -5,7 +5,7 @@ import { betterAuthComponent } from '../convex/auth';
 import type { GenericCtx } from '../convex/_generated/server';
 import { environment } from '../environments/environment';
 
-const siteUrl = environment.siteUrl; // Angular app origin
+const siteUrl = process.env['SITE_URL'] || 'http://localhost:4200'; // Angular app origin
 
 export const createAuth = (ctx: GenericCtx) =>
   betterAuth({
