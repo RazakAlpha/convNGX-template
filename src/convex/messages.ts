@@ -12,6 +12,8 @@ export const getMessages = query({
           _id: v.id('users'),
           email: v.string(),
           name: v.string(),
+          isActive: v.boolean(),
+          role: v.string(),
           _creationTime: v.number(),
         }),
       ),
