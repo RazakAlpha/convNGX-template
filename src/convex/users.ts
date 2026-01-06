@@ -1,31 +1,26 @@
 import { v } from 'convex/values';
-import { query } from './_generated/server';
+import { query, mutation } from './_generated/server';
 import { Id } from './_generated/dataModel';
-export const getCurrentUser = query({
-  args: {},
-  returns: v.union(
-    v.null(),
-    v.object({
-      _id: v.id('users'),
-      email: v.string(),
-      name: v.string(),
-      role: v.union(v.literal('user'), v.literal('guest')),
-      isActive: v.boolean(),
-      lastLogin: v.optional(v.number()),
-      _creationTime: v.number(),
-    })
-  ),
-  handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
+import { betterAuthComponent } from './auth';
+
+export const updateUserProfile = mutation({
+  args: {
+    name: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const userId = (await betterAuthComponent.getAuthUserId(ctx)) as Id<'users'>;
+    if (!userId) {
+      throw new Error('User not authenticated');
     }
-    // For now the id type requires an assertion
-    const userIdFromCtx = identity.subject as Id<'users'>;
 
-    const user = await ctx.db.get(userIdFromCtx);
+    const updateData: { name?: string } = {};
+    if (args.name !== undefined) {
+      updateData.name = args.name;
+    }
 
-    // You can combine them if you want
-    return user;
+    await ctx.db.patch(userId, updateData);
+
+    return null;
   },
 });

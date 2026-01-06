@@ -9,6 +9,6 @@ export class ConvexAuthState {
   readonly isAuthenticated = computed(() => this._isAuthed());
 
   constructor() {
-    this.convex.onAuth((s) => this._isAuthed.set(s.isAuthenticated));
+    this.convex.onAuth((s: { isAuthenticated: boolean }) => this._isAuthed.set(s.isAuthenticated));
   }
 }

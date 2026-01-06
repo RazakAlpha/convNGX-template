@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -7,36 +7,53 @@ import {
   AbstractControl,
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { PasswordInputComponent } from '../../shared/components/password-input.component';
+import { AuthLayoutComponent } from '../../shared/components/auth-layout.component';
 
 @Component({
   selector: 'app-signup',
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    RouterLink,
+    PasswordInputComponent,
+    AuthLayoutComponent,
+  ],
   template: `
-    <div class="auth-container">
-      <div class="auth-card">
-        <h2>Sign Up</h2>
-        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+    <app-auth-layout>
+      <div class="auth-card animate-fadeInUp">
+        <div class="auth-card-header">
+          <a routerLink="/" class="back-link">
+            <span class="back-arrow">←</span>
+            Back
+          </a>
+          <h2>Create account</h2>
+          <p>Start building with real-time data</p>
+        </div>
+
+        <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="auth-form">
           <div class="form-group">
-            <label for="name">Name</label>
+            <label for="name">Full name</label>
             <input
               id="name"
               type="text"
               formControlName="name"
-              placeholder="Enter your name"
+              placeholder="John Doe"
+              autocomplete="name"
               [class.error]="signupForm.get('name')?.invalid && signupForm.get('name')?.touched"
             />
             @if (signupForm.get('name')?.invalid && signupForm.get('name')?.touched) {
-              <div class="error-message">
+              <span class="field-error">
                 @if (signupForm.get('name')?.errors?.['required']) {
                   Name is required
-                }
-                @if (signupForm.get('name')?.errors?.['minlength']) {
+                } @else if (signupForm.get('name')?.errors?.['minlength']) {
                   Name must be at least 2 characters
                 }
-              </div>
+              </span>
             }
           </div>
 
@@ -46,86 +63,78 @@ import { AuthService } from '../../services/auth.service';
               id="email"
               type="email"
               formControlName="email"
-              placeholder="Enter your email"
+              placeholder="you@example.com"
+              autocomplete="email"
               [class.error]="signupForm.get('email')?.invalid && signupForm.get('email')?.touched"
             />
             @if (signupForm.get('email')?.invalid && signupForm.get('email')?.touched) {
-              <div class="error-message">
+              <span class="field-error">
                 @if (signupForm.get('email')?.errors?.['required']) {
                   Email is required
+                } @else if (signupForm.get('email')?.errors?.['email']) {
+                  Enter a valid email address
                 }
-                @if (signupForm.get('email')?.errors?.['email']) {
-                  Please enter a valid email
-                }
-              </div>
+              </span>
             }
           </div>
 
           <div class="form-group">
             <label for="password">Password</label>
-            <input
+            <app-password-input
               id="password"
-              type="password"
-              formControlName="password"
-              placeholder="Enter your password"
-              [class.error]="
-                signupForm.get('password')?.invalid && signupForm.get('password')?.touched
-              "
+              [formControl]="$any(signupForm.get('password'))"
+              placeholder="At least 6 characters"
             />
             @if (signupForm.get('password')?.invalid && signupForm.get('password')?.touched) {
-              <div class="error-message">
+              <span class="field-error">
                 @if (signupForm.get('password')?.errors?.['required']) {
                   Password is required
-                }
-                @if (signupForm.get('password')?.errors?.['minlength']) {
+                } @else if (signupForm.get('password')?.errors?.['minlength']) {
                   Password must be at least 6 characters
                 }
-              </div>
+              </span>
             }
           </div>
 
           <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input
+            <label for="confirmPassword">Confirm password</label>
+            <app-password-input
               id="confirmPassword"
-              type="password"
-              formControlName="confirmPassword"
-              placeholder="Confirm your password"
-              [class.error]="
-                signupForm.get('confirmPassword')?.invalid &&
-                signupForm.get('confirmPassword')?.touched
-              "
+              [formControl]="$any(signupForm.get('confirmPassword'))"
+              placeholder="Re-enter your password"
             />
             @if (
               signupForm.get('confirmPassword')?.invalid &&
               signupForm.get('confirmPassword')?.touched
             ) {
-              <div class="error-message">
+              <span class="field-error">
                 @if (signupForm.get('confirmPassword')?.errors?.['required']) {
                   Please confirm your password
-                }
-                @if (signupForm.get('confirmPassword')?.errors?.['passwordMismatch']) {
+                } @else if (signupForm.get('confirmPassword')?.errors?.['passwordMismatch']) {
                   Passwords do not match
                 }
-              </div>
+              </span>
             }
           </div>
 
           @if (errorMessage()) {
-            <div class="error-message global-error">
+            <div class="global-error" role="alert">
+              <span class="error-icon">!</span>
               {{ errorMessage() }}
             </div>
           }
 
           <button
             type="submit"
+            class="submit-btn"
             [disabled]="signupForm.invalid || isLoading()"
-            class="submit-button"
           >
             @if (isLoading()) {
+              <span class="spinner"></span>
               Creating account...
             } @else {
-              Sign Up
+              Create Account
+              <span class="btn-arrow">→</span>
             }
           </button>
         </form>
@@ -134,137 +143,232 @@ import { AuthService } from '../../services/auth.service';
           <p>Already have an account? <a routerLink="/signin">Sign in</a></p>
         </div>
       </div>
-    </div>
+    </app-auth-layout>
   `,
   styles: [
     `
-      .auth-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 100vh;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 20px;
-      }
-
       .auth-card {
-        background: white;
-        border-radius: 12px;
-        padding: 2rem;
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
         width: 100%;
-        max-width: 400px;
       }
 
-      h2 {
-        text-align: center;
+      .auth-card-header {
         margin-bottom: 2rem;
-        color: #333;
-        font-weight: 600;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+        margin-bottom: 1.5rem;
+        transition: color var(--transition-fast);
+      }
+
+      .back-link:hover {
+        color: var(--color-text-primary);
+      }
+
+      .back-arrow {
+        font-size: 1.25rem;
+        line-height: 1;
+      }
+
+      .auth-card-header h2 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin: 0 0 0.5rem;
+        color: #fff;
+      }
+
+      .auth-card-header p {
+        color: var(--color-text-muted);
+        margin: 0;
+      }
+
+      .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
       }
 
       .form-group {
-        margin-bottom: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
       }
 
       label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #555;
+        font-size: 0.875rem;
         font-weight: 500;
+        color: var(--color-text-secondary);
       }
 
       input {
         width: 100%;
-        padding: 0.75rem;
-        border: 2px solid #e1e5e9;
-        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        background: var(--color-surface);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        color: var(--color-text-primary);
         font-size: 1rem;
-        transition: border-color 0.3s ease;
-        box-sizing: border-box;
+        transition: all var(--transition-normal);
+      }
+
+      input::placeholder {
+        color: var(--color-text-muted);
+      }
+
+      input:hover {
+        border-color: var(--color-border-hover);
       }
 
       input:focus {
         outline: none;
-        border-color: #667eea;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px var(--color-primary-light);
       }
 
       input.error {
-        border-color: #e74c3c;
+        border-color: var(--color-error);
       }
 
-      .error-message {
-        color: #e74c3c;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
+      input.error:focus {
+        box-shadow: 0 0 0 3px var(--color-error-light);
+      }
+
+      .field-error {
+        font-size: 0.8125rem;
+        color: var(--color-error);
       }
 
       .global-error {
-        background: #fdf2f2;
-        border: 1px solid #fecaca;
-        border-radius: 6px;
-        padding: 0.75rem;
-        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        background: var(--color-error-light);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        border-radius: var(--radius-lg);
+        color: var(--color-error);
+        font-size: 0.875rem;
       }
 
-      .submit-button {
+      .error-icon {
+        width: 20px;
+        height: 20px;
+        background: var(--color-error);
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 700;
+        flex-shrink: 0;
+      }
+
+      .submit-btn {
         width: 100%;
-        background: #667eea;
-        color: white;
+        padding: 0.875rem 1.5rem;
+        background: var(--gradient-primary);
+        color: #fff;
         border: none;
-        padding: 0.875rem;
-        border-radius: 8px;
+        border-radius: var(--radius-lg);
         font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
-        transition: background-color 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+        transition: all var(--transition-normal);
+        box-shadow: var(--shadow-glow-primary);
       }
 
-      .submit-button:hover:not(:disabled) {
-        background: #5a67d8;
+      .submit-btn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.5);
       }
 
-      .submit-button:disabled {
-        background: #a0aec0;
+      .submit-btn:active:not(:disabled) {
+        transform: translateY(0);
+      }
+
+      .submit-btn:disabled {
+        opacity: 0.6;
         cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .btn-arrow {
+        transition: transform var(--transition-fast);
+      }
+
+      .submit-btn:hover:not(:disabled) .btn-arrow {
+        transform: translateX(4px);
+      }
+
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
       }
 
       .auth-footer {
+        margin-top: 2rem;
         text-align: center;
-        margin-top: 1.5rem;
-        color: #666;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--color-border);
+      }
+
+      .auth-footer p {
+        color: var(--color-text-muted);
+        font-size: 0.9375rem;
+        margin: 0;
       }
 
       .auth-footer a {
-        color: #667eea;
-        text-decoration: none;
+        color: var(--color-primary);
         font-weight: 500;
+        transition: color var(--transition-fast);
       }
 
       .auth-footer a:hover {
-        text-decoration: underline;
+        color: var(--color-accent-purple);
       }
     `,
   ],
 })
 export class SignupComponent {
-  signupForm: FormGroup;
-  isLoading = signal(false);
-  errorMessage = signal<string | null>(null);
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-  ) {
+  readonly signupForm: FormGroup;
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
+
+  constructor() {
     this.signupForm = this.fb.group(
       {
         name: ['', [Validators.required, Validators.minLength(2)]],
-        email: ['', [Validators.required]],
+        email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(6)]],
         confirmPassword: ['', [Validators.required]],
       },
-      { validators: this.passwordMatchValidator },
+      { validators: this.passwordMatchValidator }
     );
   }
 
@@ -282,14 +386,13 @@ export class SignupComponent {
 
   async onSubmit() {
     if (this.signupForm.valid) {
-      console.log(this.signupForm.value);
       this.isLoading.set(true);
       this.errorMessage.set(null);
 
       try {
         const { name, email, password } = this.signupForm.value;
         await this.authService.signUp(email, password, name);
-        this.router.navigate(['/']);
+        this.router.navigate(['/chat']);
       } catch (error) {
         this.errorMessage.set(error instanceof Error ? error.message : 'Sign up failed');
       } finally {

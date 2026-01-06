@@ -16,7 +16,7 @@ export class AuthService {
   private auth = inject(ConvexAuthState);
 
   private me = convexLiveResource(
-    api.users.getCurrentUser,
+    api.auth.getCurrentUser,
     () => (this.auth.isAuthenticated() ? {} : undefined),
     { keep: 'last' },
   );

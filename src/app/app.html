@@ -1,16 +1,18 @@
 <div class="app-container">
   <nav class="navbar">
     <div class="nav-content">
-      <h1>{{ title() }}</h1>
-      
+      <h1>
+        <a routerLink="/chat" class="nav-title">{{ title() }}</a>
+      </h1>
+
       @if (authService.isAuthenticated()) {
         <div class="user-section">
           <span class="welcome-text">
             Welcome, {{ authService.user()?.name || authService.user()?.email }}!
           </span>
-          <button 
+          <button
             class="signout-button"
-            (click)="authService.signOut()"
+            (click)="signOut()"
             [disabled]="authService.isLoading()"
           >
             @if (authService.isLoading()) {
@@ -32,4 +34,6 @@
   <main class="main-content">
     <router-outlet />
   </main>
+
+  <app-toast-notification />
 </div>
